@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="covid.css">
+
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow"
+                    style="height: 60px;">
+
+                    <h1 style="color: black; font-weight: 600;">Covid 19 LIVE</h4>
+                        <ul class="navegar">
+                            <!-- <li> <a href="">Calculadora</a> </li> -->
+                            <li id ="li1"><a id="a1" href="covid.html" >Inicio</a></li>
+                            <li id ="li1"> <a id="a2" href="mapa.html" >Mapa</a> </li>
+                        </ul>
+
+
+                </nav>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div id='map'></div>
+
+
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+
+    <script>
+
+        function thousands_separators(num) {
+            var num_parts = num.toString().split(".");
+            num_parts[0] = num_parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return num_parts.join(".");
+        }
+
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZ3QxMjM5IiwiYSI6ImNrYXg1YWR0cjAzaWUyeXRmZHhzc3FlYmwifQ.9gvMMIQM2uiaBO80_o_iCA';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v10',
+            center: [25, 20],
+            zoom: 1.05,
+            interactive: true,
+            attributionControl: false
+
+        });
+
+
+        const getColor = count => {
+            if (count >= 200000) {
+                return "#BF0303";
+            }
+
+            if (count >= 100000) {
+                return "#FEBD00";
+            }
+
+            if (count >= 50000) {
+                return "#E1E156"
+            }
+            if (count >= 10000) {
+                return "#425A82"
+            }
+            if (count >= 1000) {
+                return "grey"
+            }
+
+            return "#5F8242"
+        }
+
+        function getTabla() {
+
+            fetch('https://corona.lmao.ninja/v2/countries?yesterday&sort')
+                .then((response) => {
+                    return response.json();
+                }).then((objTabla) => {
+
+                    console.log(objTabla[0].countryInfo)
+
+
+                    var hoveredStateId = null;
+
+
+                    if (objTabla) {
+
+                        var cantidad = Object.keys(objTabla).length;
+
+                        for (let index = 0; index < cantidad; index++) {
+
+                            var popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+                                `<div style="display: flex; justify-content: center;"><img src=${objTabla[index].countryInfo.flag} width="40" height="30"></div>
+                             <div style="text-align: center;">${objTabla[index].country}</div>
+                             <div>Cases: ${thousands_separators(objTabla[index].cases)}</div>
+                             <div>Deaths: ${thousands_separators(objTabla[index].deaths)}</div>
+                             <div>Critical: ${thousands_separators(objTabla[index].critical)}</div>
+                             <div>Recovered: ${thousands_separators(objTabla[index].recovered)}</div>
+                             `
+                            );
+
+                            var marker = new mapboxgl.Marker({
+                                color: getColor(objTabla[index].cases),
+
+
+
+                            })
+                                .setLngLat([objTabla[index].countryInfo.long, objTabla[index].countryInfo.lat])
+                                .setPopup(popup)
+                                .addTo(map);
+
+
+
+                            
+                            
+
+
+                        }
+
+
+                    }
+                })
+        }
+
+
+
+
+        getTabla()
+
+
+
+
+    </script>
+
+</body>
+
+</html>
